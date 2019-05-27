@@ -1,5 +1,7 @@
-import * as Calc from "../pkg/webcalc"
+import * as wasm from "webcalc"
 
-let webcalc = Calc.new()
-let ret = webcalc.calc("2 + 2")
-console.log(JSON.stringify(ret, 0, 2))
+let calc = wasm.Calc.new()
+let ans = calc.calc('a + 2')
+console.log(JSON.stringify(ans, null, 2))
+ans = calc.calc('a = 40')
+console.log(JSON.stringify(ans, null, 2))
