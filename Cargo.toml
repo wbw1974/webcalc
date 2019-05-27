@@ -1,0 +1,33 @@
+[package]
+name = "webcalc"
+version = "1.0.0"
+authors = ["W Brent Williams <wbrentwilliams@hotmail.com>"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["console_error_panic_hook"]
+
+[dependencies]
+# pmdas dependencies
+unicode-segmentation = "1.2.1"
+regex = "1.1.6"
+log = "0.4.6"
+
+#wasm dependencies
+serde = "1.0.91"
+serde_derive = "1.0.91"
+cfg-if = "0.1.7"
+console_error_panic_hook = { version = "0.1.6", optional = true }
+wee_alloc = { version = "0.4.4", optional = true }
+
+[dependencies.wasm-bindgen]
+version = "0.2.45"
+features = ["serde-serialize"]
+
+[dev-dependencies]
+wasm-bindgen-test = "0.2.45"
+
+[profile.release]
+opt-level = "s"
