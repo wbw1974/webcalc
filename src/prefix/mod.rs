@@ -4,6 +4,10 @@ use regex::Regex;
 /// Function that translates a infix notated equation to an prefix notated equation.
 /// # Example
 /// a + b -> + a b
+///
+/// TODO: capture and fix negative signifier
+///
+/// a + -b -> b - + a -> -b + a -> -b a + -> + a -b
 /// ...
 pub fn translate_infix(infix_notation: &str) -> String {
     debug!("input string: {}", infix_notation);
@@ -14,8 +18,14 @@ pub fn translate_infix(infix_notation: &str) -> String {
         .split_word_bounds()
         .filter(|x| !whitespace.is_match(x))
         .rev();
-
+    let mut position = 0;
+    let mut skip = false;
     for item in word_or_punctuation {
+        if skip {
+            skip = false;
+            position += 1;
+            continue;
+        }
         debug!("item: {}", item);
         match item {
             ")" => {
@@ -76,11 +86,25 @@ pub fn translate_infix(infix_notation: &str) -> String {
             }
             _ => {
                 debug!("match: all others: {}", item);
-                ret.push_str(" ");
-                ret.push_str(item);
+                let signed = check_signed(infix_notation, position);
+                match signed {
+                    Some("+") | Some("-") => {
+                        debug!("returned signed: {}", signed.unwrap());
+                        ret.push_str(" ");
+                        ret.push_str(item);
+                        ret.push_str(signed.unwrap());
+                        skip = true;
+                    },
+                    _ => {
+                        debug!("returned signed: None");
+                        ret.push_str(" ");
+                        ret.push_str(item);
+                    }
+                }
                 debug!("ret: {}", ret);
             }
         }
+        position += 1;
     }
     debug!("empty stack");
     while !stack.is_empty() {
@@ -109,6 +133,41 @@ fn get_precedence(op: &str) -> i32 {
         _ => 0,
     }
 }
+
+fn check_signed(infix_notation: &str, position: usize) -> Option<&str> {
+    let whitespace = Regex::new(r"^\s+?").unwrap();
+    let mut local = infix_notation
+        .split_word_bounds()
+        .filter(|x| !whitespace.is_match(x))
+        .rev();
+    let local_first_item = local.nth(position + 1);
+    let local_second_item = local.next();
+
+    match local_first_item {
+        None => {
+            debug!("local_first_item: None");
+                return None;
+        },
+        _ => {
+            debug!("local_first_item: {}", local_first_item.unwrap());
+            match local_second_item {
+                Some("+") | Some("-") | Some("*") | Some("/") | Some("=") => {
+                    debug!("local_second_item: {}", local_second_item.unwrap());
+                    return local_first_item;
+                },
+                None => {
+                    debug!("local_second_item: None");
+                    return None;
+                },
+                _ => {
+                    debug!("local_second_item: {}", local_second_item.unwrap());
+                    return None;
+                },
+            }
+        }
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -183,6 +242,20 @@ mod tests {
     fn test_prefix_equals() {
         let input = "a = 3";
         let result = "= a 3";
+        assert_eq!(result, translate_infix(input));
+    }
+
+    #[test]
+    fn test_prefix_equals_negative() {
+        let input = "a = -3";
+        let result = "= a -3";
+        assert_eq!(result, translate_infix(input));
+    }
+
+    #[test]
+    fn test_prefix_equals_negative_2() {
+        let input = "(a + b * c / (d - f / (g * h / -i))) + (j + k)";
+        let result = "+ ( + a * b / c ( - d / f ( * g / h -i ) ) ) ( + j k )";
         assert_eq!(result, translate_infix(input));
     }
 }

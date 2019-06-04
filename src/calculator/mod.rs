@@ -1,4 +1,3 @@
-use unicode_segmentation::UnicodeSegmentation;
 use regex::Regex;
 use std::collections::HashMap;
 
@@ -21,7 +20,7 @@ pub fn parse_to_vec_and_map(in_str: &str) -> Result<(Vec<Cell>, HashMap<String, 
     let whitespace = Regex::new(r"^\s+?").unwrap();
 
     let mut word_or_punctuation = in_str
-        .split_word_bounds()
+        .split_whitespace()
         .filter(|x| !whitespace.is_match(x))
         .peekable();
     loop {
@@ -381,3 +380,36 @@ mod tests {
         assert_eq!(result, convert_cell_vector_to_string(&result_cal.ok().unwrap()));
     }
 }
+
+    #[test]
+    fn test_substitution_2() {
+        let result = String::from("-4.00000000");
+        let input = String::from("+ + a a + a a");
+
+        let vector_and_map = parse_to_vec_and_map(input.as_str());
+        if vector_and_map.is_err() {
+             panic!("{}", vector_and_map.err().unwrap());
+        }
+        let (equation, mut variables) = vector_and_map.ok().unwrap();
+
+        let input = String::from("= a -1");
+        let vector_and_map = parse_to_vec_and_map(input.as_str());
+        if vector_and_map.is_err() {
+            panic!("{}", vector_and_map.err().unwrap().as_str());
+        } else {
+            let (throw_away, mut var1) = vector_and_map.ok().unwrap();
+            if !throw_away.is_empty() {
+                panic!("Set variable. Expected equation to be empty.");
+            }
+            if var1.is_empty() {
+                panic!("Set variable. Expected variables to have values.");
+            } else {
+                for (k, v) in var1.drain().take(1) {
+                    variables.insert(k, v);
+                }
+            }
+        }
+
+        let result_cal = calculate(&equation, &variables);
+        assert_eq!(result, convert_cell_vector_to_string(&result_cal.ok().unwrap()));
+    }
