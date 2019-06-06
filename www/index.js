@@ -1,10 +1,16 @@
-import * as wasm from "webcalc"
+import { Calc } from "webcalc"
 
-let calc = wasm.Calc.new()
-let ans = calc.calc('a * a')
-let range = Array.from(new Array(21), (x, i) => i + -10)
-console.log(JSON.stringify(range, null, 2))    
-for (let item of range) {
-    ans = calc.calc('a = ' + item)
-    console.log(JSON.stringify(ans, null, 2))    
+const calc = Calc.new()
+const calcButton = document.getElementById("calcButton");
+calcButton.addEventListener("click", event => {
+    work()
+})
+
+const work = () => {
+    console.log("Got to work")
+    let input = document.getElementById("input").value
+    let ans = calc.calc(input)
+    if (ans.state === "success") {
+        let output = document.getElementById("output").value=ans.value
+    }
 }
