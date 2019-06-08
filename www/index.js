@@ -7,10 +7,16 @@ calcButton.addEventListener("click", event => {
 })
 
 const work = () => {
-    console.log("Got to work")
     let input = document.getElementById("input").value
+    var history = document.getElementById("inputHistory")
+    if(history.selectionStart == history.selectionEnd) {
+        history.scrollTop = history.scrollHeight;
+    }
+    history.value += input + "\n"
+    
     let ans = calc.calc(input)
+    console.log("calculation: " + JSON.stringify(ans, null, 2))
     if (ans.state === "success") {
-        let output = document.getElementById("output").value=ans.value
+        document.getElementById("output").value=ans.value
     }
 }

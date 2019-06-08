@@ -6,11 +6,32 @@
   </head>
   <body>
     <div>
-      <textarea class="calcAnswer" id="output" name="answer" rows="5" cols = "40"></textarea>
+      <input 
+        class="calcAnswer" 
+        id="output" 
+        type="text" 
+        cols="40"
+        readonly>
     </div>
     <div>
-      <textarea class="calcInput" id="input" name="input" rows="2" cols="40" autofocus></textarea>
-      <button id="calcButton" type="button">calc</button>
+      <textarea 
+        class="calcInputHistory"
+        id="inputHistory"
+        name="inputHistory"
+        rows="5"
+        cols="40"
+        readonly></textarea>
+    </div>
+    <div>
+      <input
+        class="calcInput"
+        id="input"
+        type="text"
+        size="40"
+        autofocus>
+      <button
+        id="calcButton"
+        type="button">calc</button>
     </div>
     <script src="./bootstrap.js"></script>
   </body>
