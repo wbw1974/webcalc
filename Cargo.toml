@@ -2,6 +2,10 @@
 name = "webcalc"
 version = "1.0.0"
 authors = ["W Brent Williams <wbrentwilliams@hotmail.com>"]
+license = "MIT"
+description = "Four function calculator built to run in a web browser via web assembly"
+repository = "https://github.com/wbw1974/webcalc"
+readme = "README.md"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
