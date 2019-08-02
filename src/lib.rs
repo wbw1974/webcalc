@@ -3,8 +3,6 @@ extern crate log;
 extern crate regex;
 extern crate unicode_segmentation;
 extern crate wasm_bindgen;
-#[macro_use]
-extern crate serde_derive;
 
 mod calculator;
 mod infix;
@@ -12,13 +10,6 @@ mod prefix;
 use std::collections::HashMap;
 
 use wasm_bindgen::prelude::*;
-
-#[derive(Serialize)]
-pub struct CalcReturn {
-    state: String,
-    equation: String,
-    value: String
-}
 
 #[wasm_bindgen]
 pub struct Calc {
@@ -28,6 +19,7 @@ pub struct Calc {
 
 #[wasm_bindgen]
 impl Calc {
+    #[wasm_bindgen(constructor)]
     pub fn new() -> Calc {
         Calc {
             equation: Vec::<calculator::Cell>::new(),
@@ -39,6 +31,7 @@ impl Calc {
         let processed_input = prefix::translate_infix(infix_notation.trim());
         let vector_and_map = calculator::parse_to_vec_and_map(processed_input.as_str());
         if vector_and_map.is_err() {
+            // TODO: web-sys call here to alter web presentation
             let result = CalcReturn {
                 state: format!("error"),
                 equation: format!(""),
