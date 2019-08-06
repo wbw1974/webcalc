@@ -1,5 +1,3 @@
-#[macro_use]
-extern crate log;
 extern crate regex;
 extern crate unicode_segmentation;
 extern crate wasm_bindgen;
@@ -10,6 +8,7 @@ mod prefix;
 use std::collections::HashMap;
 
 use wasm_bindgen::prelude::*;
+use wasm_bindgen::JsCast;
 
 #[wasm_bindgen]
 pub struct Calc {
@@ -21,33 +20,33 @@ pub struct Calc {
 impl Calc {
     #[wasm_bindgen(constructor)]
     pub fn new() -> Calc {
-        Calc {
+        return Calc {
             equation: Vec::<calculator::Cell>::new(),
             variables: HashMap::<String, f64>::new()
         }
     }
 
-    pub fn calc(&mut self, infix_notation: String) -> JsValue {
+    #[wasm_bindgen]
+    pub fn calc(&mut self, infix_notation: String) -> Result<(), JsValue> {
+        let window = web_sys::window().expect("no global `window` exists");
+        let document = window.document().expect("should have a document on window");
         let processed_input = prefix::translate_infix(infix_notation.trim());
         let vector_and_map = calculator::parse_to_vec_and_map(processed_input.as_str());
         if vector_and_map.is_err() {
-            // TODO: web-sys call here to alter web presentation
-            let result = CalcReturn {
-                state: format!("error"),
-                equation: format!(""),
-                value: vector_and_map.err().unwrap()
-            };
-            return JsValue::from_serde(&result).unwrap();
+            let thing = unwrap_html_textarea_element(document.get_element_by_id("inputHistory").unwrap());
+                let thing1 = thing.selection_end().unwrap();
+                let thing2 = thing.selection_start().unwrap();
+                let val = thing.value();
+                thing.set_value(" ");
+                // input_history.value += infix_notation + "\n";
+                // TODO: web-sys call here to alter web presentation
+                return Ok(());
         } else {
             let (eq, mut var) = vector_and_map.ok().unwrap();
             if eq.is_empty() {
                 if var.is_empty() {
-                    let result = CalcReturn {
-                        state: format!("error"),
-                        equation: format!(""),
-                        value: format!("Neither equation nor variable set.")
-                    };
-                    return JsValue::from_serde(&result).unwrap();
+            // TODO: web-sys call here to alter web presentation
+            return Ok(());
                 } else {
                     for (k, v) in var.drain().take(1) {
                         self.variables.insert(k, v);
@@ -68,28 +67,26 @@ impl Calc {
                 }
             }
 
-            let equation_out = format!(
-                "{}",
-                infix::translate_prefix(
-                    calculator::convert_cell_vector_to_string(&self.equation).as_str()
-                )
-            );
+            // TODO: Might use this in output
+            // let equation_out = format!(
+            //     "{}",
+            //     infix::translate_prefix(
+            //         calculator::convert_cell_vector_to_string(&self.equation).as_str()
+            //     )
+            // );
             let result_cal = calculator::calculate(&self.equation, &self.variables);
             if result_cal.is_ok() {
-                let result = CalcReturn {
-                    state: format!("success"),
-                    equation: equation_out,
-                    value: calculator::convert_cell_vector_to_string(&result_cal.ok().unwrap())
-                };
-                return JsValue::from_serde(&result).unwrap();
+                // TODO: web-sys call here to alter web presentation
+                return Ok(());
             } else {
-                let result = CalcReturn {
-                    state: format!("error"),
-                    equation: format!(""),
-                    value: result_cal.err().unwrap()
-                };
-                return JsValue::from_serde(&result).unwrap();
+                // TODO: web-sys call here to alter web presentation
+                return Ok(());
             }
         }
     }
+}
+
+/// Function that performs a specific dynamic cast from an Element to an HtmlTextAreaElement
+fn unwrap_html_textarea_element(element: web_sys::Element) -> web_sys::HtmlTextAreaElement {
+    return element.dyn_into::<web_sys::HtmlTextAreaElement>().unwrap();
 }

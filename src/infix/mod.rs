@@ -6,7 +6,6 @@ use regex::Regex;
 /// + a b -> a + b
 /// ...
 pub fn translate_prefix(prefix_notation: &str) -> String {
-    debug!("input string: {}", prefix_notation);
     let whitespace = Regex::new(r"^\s+?").unwrap();
     let mut ret = String::new();
     let mut operators = Vec::new();
@@ -17,11 +16,9 @@ pub fn translate_prefix(prefix_notation: &str) -> String {
 
     loop {
         let item = word_or_punctuation.next();
-        debug!("item: {}", item.unwrap());
         match item {
             Some("(") => {
                 ret.push_str(item.unwrap());
-                debug!("ret: {}", ret);
             }
             Some(")") => {
                 ret.push_str(item.unwrap());
@@ -37,11 +34,9 @@ pub fn translate_prefix(prefix_notation: &str) -> String {
                 }
             }
             Some("=") | Some("+") | Some("-") | Some("*") | Some("/") => {
-                debug!("match: operator: {}", item.unwrap());
                 operators.push(item.unwrap());
             }
             Some(_) => {
-                debug!("match: all others: {}", item.unwrap());
                 ret.push_str(item.unwrap());
                 if operators.is_empty() {
                     // do nothing

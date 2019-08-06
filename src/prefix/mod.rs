@@ -10,7 +10,6 @@ use regex::Regex;
 /// a + -b -> b - + a -> -b + a -> -b a + -> + a -b
 /// ...
 pub fn translate_infix(infix_notation: &str) -> String {
-    debug!("input string: {}", infix_notation);
     let whitespace = Regex::new(r"^\s+?").unwrap();
     let mut ret = String::new();
     let mut stack = Vec::new();
@@ -26,42 +25,32 @@ pub fn translate_infix(infix_notation: &str) -> String {
             position += 1;
             continue;
         }
-        debug!("item: {}", item);
         match item {
             ")" => {
                 ret.push_str(" ");
                 ret.push_str(item);
-                debug!("ret: {}", ret);
                 stack.push(item);
             }
             "=" | "+" | "-" | "*" | "/" => {
-                debug!("match: operator: {}", item);
                 if stack.is_empty() {
-                    debug!("push '{}' onto empty stack", item);
                     stack.push(item);
                 } else {
                     let stack_top = stack.pop().unwrap();
-                    debug!("pop stack: {}", stack_top);
                     if get_precedence(stack_top) >= get_precedence(item) {
                         if item != ")" {
                             ret.push_str(" ");
                             ret.push_str(stack_top);
-                            debug!("ret: {}", ret);
                         }
                     } else {
-                        debug!("push {} back onto stack", stack_top);
                         stack.push(stack_top);
                     }
-                    debug!("push {} onto stack", item);
                     stack.push(item);
                 }
             }
             "(" => {
-                debug!("match: left-parenthesis: {}", item);
                 if stack.is_empty() {
                     ret.push_str(" ");
                     ret.push_str(item);
-                    debug!("ret: {}", ret);
                 } else {
                     let mut check = true;
                     while check {
@@ -69,59 +58,47 @@ pub fn translate_infix(infix_notation: &str) -> String {
                             check = false;
                         } else {
                             let stack_top = stack.pop().unwrap();
-                            debug!("pop stack: {}", stack_top);
                             if stack_top == ")" {
                                 check = false;
                             } else {
                                 ret.push_str(" ");
                                 ret.push_str(stack_top);
-                                debug!("ret: {}", ret);
                             }
                         }
                     }
                     ret.push_str(" ");
                     ret.push_str(item);
-                    debug!("ret: {}", ret);
                 }
             }
             _ => {
-                debug!("match: all others: {}", item);
                 let signed = check_signed(infix_notation, position);
                 match signed {
                     Some("+") | Some("-") => {
-                        debug!("returned signed: {}", signed.unwrap());
                         ret.push_str(" ");
                         ret.push_str(item);
                         ret.push_str(signed.unwrap());
                         skip = true;
                     },
                     _ => {
-                        debug!("returned signed: None");
                         ret.push_str(" ");
                         ret.push_str(item);
                     }
                 }
-                debug!("ret: {}", ret);
             }
         }
         position += 1;
     }
-    debug!("empty stack");
     while !stack.is_empty() {
         let stack_top = stack.pop().unwrap();
-        debug!("pop stack: {}", stack_top);
         ret.push_str(" ");
         ret.push_str(stack_top);
-        debug!("ret: {}", ret);
     }
 
-    debug!("ret: {}", ret);
     let rev_ret = ret.split_word_bounds()
         .rev()
         .collect::<String>()
         .trim()
         .to_string();
-    debug!("rev_ret: {}", rev_ret);
     return rev_ret;
 }
 
@@ -145,22 +122,17 @@ fn check_signed(infix_notation: &str, position: usize) -> Option<&str> {
 
     match local_first_item {
         None => {
-            debug!("local_first_item: None");
-                return None;
+            return None;
         },
         _ => {
-            debug!("local_first_item: {}", local_first_item.unwrap());
             match local_second_item {
                 Some("+") | Some("-") | Some("*") | Some("/") | Some("=") => {
-                    debug!("local_second_item: {}", local_second_item.unwrap());
                     return local_first_item;
                 },
                 None => {
-                    debug!("local_second_item: None");
                     return None;
                 },
                 _ => {
-                    debug!("local_second_item: {}", local_second_item.unwrap());
                     return None;
                 },
             }

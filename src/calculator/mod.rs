@@ -25,7 +25,6 @@ pub fn parse_to_vec_and_map(in_str: &str) -> Result<(Vec<Cell>, HashMap<String, 
         .peekable();
     loop {
         let item = word_or_punctuation.next();
-        debug!("item: {}", item.unwrap());
         match item {
             Some("=") => {
                 let variable = word_or_punctuation.next().unwrap();
@@ -78,7 +77,6 @@ pub fn calculate(vec0: &Vec<Cell>, map: &HashMap<String, f64>) -> Result<Vec<Cel
         match iter.next() {
             Some(cell) => match cell.clone() {
                 Cell::Operator(ref val) => {
-                    debug!("Operator: {}", val);
                     stack_ops.push(val.clone());
                     if stack_vals.len() >= 2 {
                         let cell1 = stack_vals.pop().unwrap();
@@ -97,11 +95,9 @@ pub fn calculate(vec0: &Vec<Cell>, map: &HashMap<String, f64>) -> Result<Vec<Cel
                     }
                 }
                 Cell::Value(ref val) => {
-                    debug!("Value: {}", val);
                     stack_vals.push(*val);
                 }
                 Cell::Variable(ref val) => {
-                    debug!("Variable: {}", val);
                     if map.contains_key(val) {
                         match map.get(val) {
                             Some(v) => {
