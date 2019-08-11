@@ -29,6 +29,7 @@ version = "0.3.4"
 features = [
   'Document',
   'Element',
+  'HtmlInputElement',
   'HtmlTextAreaElement',
   'Node',
   'Window',

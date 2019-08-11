@@ -33,20 +33,32 @@ impl Calc {
         let processed_input = prefix::translate_infix(infix_notation.trim());
         let vector_and_map = calculator::parse_to_vec_and_map(processed_input.as_str());
         if vector_and_map.is_err() {
-            let thing = unwrap_html_textarea_element(document.get_element_by_id("inputHistory").unwrap());
-                let thing1 = thing.selection_end().unwrap();
-                let thing2 = thing.selection_start().unwrap();
-                let val = thing.value();
-                thing.set_value(" ");
-                // input_history.value += infix_notation + "\n";
-                // TODO: web-sys call here to alter web presentation
-                return Ok(());
+            let input_history = unwrap_html_textarea_element(document.get_element_by_id("inputHistory").unwrap());
+            if  input_history.selection_end().unwrap() == input_history.selection_start().unwrap() {
+                input_history.set_scroll_top(input_history.scroll_height());
+            }
+            let mut ret = String::new();
+            ret.push_str(&input_history.value());
+            ret.push_str("Error parsing '");
+            ret.push_str(&infix_notation);
+            ret.push_str("': \n");
+            ret.push_str(&vector_and_map.err().unwrap());
+            ret.push_str("\n");
+            input_history.set_value(&ret);
+            return Ok(());
         } else {
             let (eq, mut var) = vector_and_map.ok().unwrap();
             if eq.is_empty() {
                 if var.is_empty() {
-            // TODO: web-sys call here to alter web presentation
-            return Ok(());
+                    let input_history = unwrap_html_textarea_element(document.get_element_by_id("inputHistory").unwrap());
+                    if  input_history.selection_end().unwrap() == input_history.selection_start().unwrap() {
+                        input_history.set_scroll_top(input_history.scroll_height());
+                    }
+                    let mut ret = String::new();
+                    ret.push_str(&input_history.value());
+                    ret.push_str("Neither equation nor variable set.\n");
+                    input_history.set_value(&ret);
+                    return Ok(());
                 } else {
                     for (k, v) in var.drain().take(1) {
                         self.variables.insert(k, v);
@@ -67,19 +79,31 @@ impl Calc {
                 }
             }
 
-            // TODO: Might use this in output
-            // let equation_out = format!(
-            //     "{}",
-            //     infix::translate_prefix(
-            //         calculator::convert_cell_vector_to_string(&self.equation).as_str()
-            //     )
-            // );
             let result_cal = calculator::calculate(&self.equation, &self.variables);
             if result_cal.is_ok() {
-                // TODO: web-sys call here to alter web presentation
+                let input_history = unwrap_html_textarea_element(document.get_element_by_id("inputHistory").unwrap());
+                if  input_history.selection_end().unwrap() == input_history.selection_start().unwrap() {
+                    input_history.set_scroll_top(input_history.scroll_height());
+                }
+                let mut ret = String::new();
+                ret.push_str(&infix_notation);
+                ret.push_str("\n");
+                input_history.set_value(&ret);
+
+                let output = unwrap_html_input_element(document.get_element_by_id("output").unwrap());
+                output.set_value(&calculator::convert_cell_vector_to_string(&result_cal.ok().unwrap()));
                 return Ok(());
             } else {
-                // TODO: web-sys call here to alter web presentation
+                let input_history = unwrap_html_textarea_element(document.get_element_by_id("inputHistory").unwrap());
+                if  input_history.selection_end().unwrap() == input_history.selection_start().unwrap() {
+                    input_history.set_scroll_top(input_history.scroll_height());
+                }
+                let mut ret = String::new();
+                ret.push_str(&input_history.value());
+                ret.push_str("Error from calculator:");
+                ret.push_str(&result_cal.err().unwrap());
+                ret.push_str("\n");
+                input_history.set_value(&ret);
                 return Ok(());
             }
         }
@@ -89,4 +113,9 @@ impl Calc {
 /// Function that performs a specific dynamic cast from an Element to an HtmlTextAreaElement
 fn unwrap_html_textarea_element(element: web_sys::Element) -> web_sys::HtmlTextAreaElement {
     return element.dyn_into::<web_sys::HtmlTextAreaElement>().unwrap();
+}
+
+/// Function that performs a specific dynamic cast from an Element to an HtmlInputElement
+fn unwrap_html_input_element(element: web_sys::Element) -> web_sys::HtmlInputElement {
+    return element.dyn_into::<web_sys::HtmlInputElement>().unwrap();
 }
