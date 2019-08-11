@@ -11,5 +11,5 @@ calcButton.addEventListener("click", event => {
 })
 
 const work = () => {
-    calc.calc(input)
+    calc.calc()
 }

@@ -27,9 +27,12 @@ impl Calc {
     }
 
     #[wasm_bindgen]
-    pub fn calc(&mut self, infix_notation: String) -> Result<(), JsValue> {
+    pub fn calc(&mut self) -> Result<(), JsValue> {
         let window = web_sys::window().expect("no global `window` exists");
         let document = window.document().expect("should have a document on window");
+
+        let infix_notation_control = unwrap_html_input_element(document.get_element_by_id("output").unwrap());
+        let infix_notation = infix_notation_control.value();
         let processed_input = prefix::translate_infix(infix_notation.trim());
         let vector_and_map = calculator::parse_to_vec_and_map(processed_input.as_str());
         if vector_and_map.is_err() {
