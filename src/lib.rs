@@ -31,7 +31,7 @@ impl Calc {
         let window = web_sys::window().expect("no global `window` exists");
         let document = window.document().expect("should have a document on window");
 
-        let infix_notation_control = unwrap_html_input_element(document.get_element_by_id("output").unwrap());
+        let infix_notation_control = unwrap_html_input_element(document.get_element_by_id("input").unwrap());
         let infix_notation = infix_notation_control.value();
         let processed_input = prefix::translate_infix(infix_notation.trim());
         let vector_and_map = calculator::parse_to_vec_and_map(processed_input.as_str());
@@ -59,6 +59,9 @@ impl Calc {
                     }
                     let mut ret = String::new();
                     ret.push_str(&input_history.value());
+                    ret.push_str("Input: ");
+                    ret.push_str(&infix_notation);
+                    ret.push_str("\n");
                     ret.push_str("Neither equation nor variable set.\n");
                     input_history.set_value(&ret);
                     return Ok(());
